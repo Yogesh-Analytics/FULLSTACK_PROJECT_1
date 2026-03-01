@@ -112,7 +112,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Test route (optional but recommended)
+// Test route (optional)
 app.get("/", (req, res) => {
   res.send("Backend is running successfully 🚀");
 });
@@ -122,19 +122,26 @@ app.post("/contact", async (req, res) => {
   const { name, email, phone, message } = req.body;
 
   try {
-   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,       
-    secure: false,   
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-  },
-});
+    // Create transporter for Gmail
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,       // TLS port
+      secure: false,   // false for TLS
+      auth: {
+        user: process.env.EMAIL_USER,  // your Gmail
+        pass: process.env.EMAIL_PASS,  // 16-digit app password
+      },
+    });
 
+    // Verify transporter connection
+   await transporter.verify()
+   .then(() => console.log("SMTP verified ✅"))
+   .catch(err => console.error("SMTP verification failed ❌", err));
+
+    // Send the email
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,
+      to: process.env.EMAIL_USER,  // you can change this if you want emails elsewhere
       subject: "New Contact Form Submission - Arkin Spaces",
       html: `
         <h2>New Enquiry</h2>
@@ -145,15 +152,16 @@ app.post("/contact", async (req, res) => {
       `,
     });
 
+    console.log(`Email sent successfully to ${process.env.EMAIL_USER}`);
     res.status(200).json({ message: "Email sent successfully" });
 
   } catch (error) {
-    console.error("Email error:", error);
+    console.error("Email sending error:", error.response || error);
     res.status(500).json({ error: "Email sending failed" });
   }
 });
 
-// IMPORTANT: Use Render's dynamic PORT
+// Render uses dynamic PORT
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
