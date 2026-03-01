@@ -103,48 +103,39 @@
 
 
 require("dotenv").config();
-
 const express = require("express");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
 
 const app = express();
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Test route (optional)
 app.get("/", (req, res) => {
-  res.send("Backend is running successfully 🚀");
+  res.send("Backend is running ");
 });
 
-// Contact Route
 app.post("/contact", async (req, res) => {
   const { name, email, phone, message } = req.body;
 
   try {
-    // Create transporter for Gmail
     const transporter = nodemailer.createTransport({
-     service: "gmail",   // false for TLS
+      host: "smtp.gmail.net",
+      port: 587,
+      secure: false,
       auth: {
-        user: process.env.EMAIL_USER,  // your Gmail
-        pass: process.env.EMAIL_PASS,  // 16-digit app password
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
-    // Verify transporter connection
-   await transporter.verify()
-   .then(() => console.log("SMTP verified ✅"))
-   .catch(err => console.error("SMTP verification failed ❌", err));
-
-    // Send the email
     await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER,  // you can change this if you want emails elsewhere
-      subject: "New Contact Form Submission - Arkin Spaces",
+      from: "yourpersonalemail@gmail.com",  // sender
+      to: "yourpersonalemail@gmail.com",    // recipient
+      subject: "New Contact Form Submission",
       html: `
-        <h2>New Enquiry</h2>
+        <h2>New Message</h2>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Phone:</strong> ${phone}</p>
@@ -152,18 +143,12 @@ app.post("/contact", async (req, res) => {
       `,
     });
 
-    console.log(`Email sent successfully to ${process.env.EMAIL_USER}`);
-    res.status(200).json({ message: "Email sent successfully" });
-
+    res.status(200).json({ message: "Email sent successfully " });
   } catch (error) {
-    console.error("Email sending error:", error.response || error);
-    res.status(500).json({ error: "Email sending failed" });
+    console.error("Email sending error:", error);
+    res.status(500).json({ error: "Email sending failed " });
   }
 });
 
-// Render uses dynamic PORT
 const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
