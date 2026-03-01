@@ -100,6 +100,8 @@
 // app.listen(5000, () => {
 //   console.log("Server running on port 5000");
 // });
+
+
 require("dotenv").config();
 
 const express = require("express");
@@ -124,9 +126,7 @@ app.post("/contact", async (req, res) => {
   try {
     // Create transporter for Gmail
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,       // TLS port
-      secure: false,   // false for TLS
+     service: "gmail",   // false for TLS
       auth: {
         user: process.env.EMAIL_USER,  // your Gmail
         pass: process.env.EMAIL_PASS,  // 16-digit app password
